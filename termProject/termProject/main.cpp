@@ -3,6 +3,38 @@
 #include <random>
 #include <string>
 #include <ctime>
+#include <thread>
+#include <chrono>
+#include <conio.h>
+#include <vector>
+#include <iomanip>
+#include <mutex>
+
+const int WIDTH = 80;
+const int HEIGHT = 15;
+bool isGameRunning = true;
+static int thr_exit = 0;
+std::thread inputThread;
+std::string inputBuffer;
+std::mutex mtx;
+
+class MyString {
+public:
+	int x;
+	std::string word;
+	int speed;
+	MyString() {}
+
+	MyString(std::string& w) : word(w) { this->x = 0; this->speed = 1; }
+
+	void setX(int p) { // x축 위치 설정
+		this->x = p;
+	}
+	void setSpeed(int p) {
+		this->speed = p;
+	}
+
+};
 
 class RandomStringComponent {
 public:
@@ -40,7 +72,6 @@ class AlphabetDecorator : public StringDecorator {
 public:
 	AlphabetDecorator(RandomStringComponent* rsc) : StringDecorator(rsc) {}
 	std::string getRandomString() override {
-		srand(static_cast<unsigned int>(time(0)));
 
 		std::string charset = "abcdefghijklmnopqrstuvwxyz";
 		std::string result = StringDecorator::getRandomString();
@@ -58,7 +89,6 @@ class NumberDecorator : public StringDecorator {
 public:
 	NumberDecorator(RandomStringComponent* rsc) : StringDecorator(rsc) {}
 	std::string getRandomString() override {
-		srand(static_cast<unsigned int>(time(0)));
 
 		std::string charset = "abcdefghijklmnopqrstuvwxyz0123456789";
 		std::string result = StringDecorator::getRandomString();
@@ -75,8 +105,7 @@ class SpecialDecorator : public StringDecorator {
 public:
 	SpecialDecorator(RandomStringComponent* rsc) : StringDecorator(rsc) {}
 	std::string getRandomString() override {
-		srand(static_cast<unsigned int>(time(0)));
-
+		
 		std::string charset = "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
 		std::string result = StringDecorator::getRandomString();
 		for (int i = 0; i < 10; i++) {
@@ -88,29 +117,67 @@ public:
 	}
 };
 
-void getConsoleSize(int& columns, int& rows) {
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+void printScreen(std::vector<MyString>& v) {
+
+	system("cls");
+
+	for (int i = 0; i < v.size(); ++i) {
+		std::cout << std::setw(v[i].x) << "" << v[i].word << std::endl;
+		
+	}
+	std::cout << "-------------------------------------\n";
+	std::cout << "입력 : " << inputBuffer << std::flush;
 }
 
+void downWord(std::vector<MyString>& v) {
+	for (int i = v.size()-1; i > 0; i--) {
+		v[i].word = v[i - 1].word;
+		v[i].x = v[i - 1].x;
+		v[i - 1].x = 0;
+		v[i - 1].word = " ";
+
+		
+	}
+	
+}
+
+void processInput() {
+	while (!thr_exit) {
+		
+		char ch = getchar();
+		if (ch == '\n') {
+			inputBuffer.clear();
+		}
+		else {
+			inputBuffer += ch;
+		}
+
+
+	}
+}
+void start_thread() {
+	thr_exit = 0;
+	inputThread = std::thread(processInput);
+	inputThread.detach();
+}
+void end_thread() {
+	thr_exit = 1;
+	if (inputThread.joinable()) {
+		inputThread.join();
+	}
+	
+}
+
+std::vector<MyString> v;
+
 int main() {
-    int columns, rows;
+	srand(static_cast<unsigned int>(time(0)));
     int choice;
     RandomStringComponent* generator = new BasicString();
-
-    getConsoleSize(columns, rows);
-
-    std::cout << rows << "  " << columns <<"\n"; // 세로 30, 가로 120
+	
+    // 내 컴퓨터 콘솔창 크기. 세로 30, 가로 120
+	// 5등분 각각 24칸을 차지.
     
-    int sectionWidth = columns / 5;
-    int sectionHeight = rows / 12;
-
-    for (int i = 0; i < 5; ++i) {
-        std::cout << std::string(sectionWidth - 1, '-') << "|";
-    }// 가로 체크
-
     std::cout << "타자게임을 시작합니다." << std::endl;
     std::cout << "옵션을 선택해주세요 \n1. Alphabet\n2. Number\n3. SpecialChar\n" << std::endl;
     std::cin >> choice;
@@ -129,9 +196,28 @@ int main() {
         std::cout << "1, 2, 3 을 입력하여 옵션을 선택해야합니다.\n";
         return 1;
     }
-    std::cout << generator->getRandomString();
     
+	for (int i = 0; i < 20; i++) {
+		std::string temp = generator->getRandomString();
+		v.push_back(MyString(temp));
+	}
+	
+	//std::thread screenThread(printScreen, std::ref(v));
+	start_thread();
+	
+	while (true) {
+		Sleep(1000);
+		downWord(v);
+		printScreen(v);
+	}
 
+
+	//screenThread.join();
+	end_thread();
+	
+	
+	
+	
 
     return 0;
 }
