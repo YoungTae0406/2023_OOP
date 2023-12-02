@@ -9,6 +9,7 @@ public:
 	std::string word;
 	int speed;
 	bool isCorrect;
+	bool isPrint;
 	MyString();
 	MyString(std::string& w);
 };
@@ -16,7 +17,7 @@ public:
 MyString::MyString() {}
 MyString::MyString(std::string& w) : word(w) {
 	this->x = 0; this->y = 0;
-	this->speed = 1; this->isCorrect = false;
+	this->speed = 0; this->isCorrect = false; this->isPrint = true;
 }
 
 
@@ -61,7 +62,12 @@ public:
 RandomStringComponent::~RandomStringComponent() {}
 
 std::string BasicString::getRandomString() {
-	return "aaaaabbbbb";
+	std::string result = "";
+	int length = rand() % 5 + 4;
+	for (int i = 0; i < length; i++) {
+		result += "a";
+	}
+	return result;
 }
 
 StringDecorator::StringDecorator(RandomStringComponent* rsc) : RSC(rsc) {}
