@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <ctime>
 
+const int MAX_STRING_LENGTH = 8;
+
 class MyString {
 public:
 	int x; int y;
@@ -63,10 +65,7 @@ RandomStringComponent::~RandomStringComponent() {}
 
 std::string BasicString::getRandomString() {
 	std::string result = "";
-	int length = rand() % 5 + 4;
-	for (int i = 0; i < length; i++) {
-		result += "a";
-	}
+	
 	return result;
 }
 
@@ -85,33 +84,38 @@ AlphabetDecorator::AlphabetDecorator(RandomStringComponent* rsc) : StringDecorat
 std::string AlphabetDecorator::getRandomString() {
 	std::string charset = "abcdefghijklmnopqrstuvwxyz";
 	std::string result = StringDecorator::getRandomString();
-	for (int i = 0; i < result.size(); i++) {
-		int index = rand() % charset.size();
-		result[i] = charset[index];
+	int remainingLength = MAX_STRING_LENGTH - result.length();
+	int length = rand() % (remainingLength + 1);
+	for (int i = 0; i < length; ++i) {
+		result += static_cast<char>('a' + rand() % 26);
 	}
+	
 	return result;
 }
 
 NumberDecorator::NumberDecorator(RandomStringComponent* rsc) : StringDecorator(rsc) {}
 
 std::string NumberDecorator::getRandomString() {
-	std::string charset = "abcdefghijklmnopqrstuvwxyz0123456789";
+	std::string charset = "0123456789";
 	std::string result = StringDecorator::getRandomString();
-	for (int i = 0; i < result.size(); i++) {
-		int index = rand() % charset.size();
-		result[i] = charset[index];
+	int remainingLength = MAX_STRING_LENGTH - result.length();
+	int length = rand() % (remainingLength + 1);
+	for (int i = 0; i < length; ++i) {
+		result += std::to_string(rand() % 10);
 	}
+
 	return result;
 }
 
 SpecialDecorator::SpecialDecorator(RandomStringComponent* rsc) : StringDecorator(rsc) {}
 
 std::string SpecialDecorator::getRandomString() {
-	std::string charset = "abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+	std::string charset = "!@#$%^&*";
 	std::string result = StringDecorator::getRandomString();
-	for (int i = 0; i < result.size(); i++) {
-		int index = rand() % charset.size();
-		result[i] = charset[index];
+	int remainingLength = MAX_STRING_LENGTH - result.length();
+	int length = rand() % (remainingLength + 1);
+	for (int i = 0; i < length; ++i) {
+		result += charset[rand() % charset.size()];
 	}
 	return result;
 }

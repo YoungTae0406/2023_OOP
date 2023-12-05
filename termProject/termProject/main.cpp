@@ -151,29 +151,59 @@ int main() {
 
 	//std::vector<MyString> v;
 	srand(static_cast<unsigned int>(time(0)));
-    int choice;
+    int choice1 = 0;
+	int choice2 = 0;
+	int choice3 = 0;
+
     RandomStringComponent* generator = new BasicString(); // Decorator.h 의 generator 
 	
     std::cout << "타자게임을 시작합니다." << std::endl;
 	std::cout << "총 20개의 단어가 나옵니다." << std::endl;
 	std::cout << "20개가 나오고 게임이 종료되면 점수가 나옵니다." << std::endl;
-    std::cout << "옵션을 선택해주세요 \n1. Alphabet\n2. Number\n3. SpecialChar\n" << std::endl;
-    std::cin >> choice;
+	std::cout << "옵션을 선택하실거라면 번호가 같게 입력해주세요" << std::endl;
+	std::cout << "1. Alphabet 옵션 : ";
+	std::cin >> choice1;
+	std::cout << "\n2.Number 옵션 : ";
+	std::cin >> choice2;
+	std::cout << "\n3.Special 옵션 : ";
+	std::cin >> choice3;
+    
+	if (choice1 == 1) {
+		if (choice2 == 2) {
+			if (choice3 == 3) { // 1, 2, 3
+				generator = new AlphabetDecorator(generator);
+				generator = new NumberDecorator(generator);
+				generator = new SpecialDecorator(generator);
+			}
+			else { // 1, 2
+				generator = new AlphabetDecorator(generator);
+				generator = new NumberDecorator(generator);
+			}
+		}
+		else {
+			if (choice3 == 3) { // 1, 3
+				generator = new AlphabetDecorator(generator);
+				generator = new SpecialDecorator(generator);
+			}
+			else { // 1
+				generator = new AlphabetDecorator(generator);
+			}
+		}
 
-    switch (choice) {
-    case 1:
-        generator = new AlphabetDecorator(generator);
-        break;
-    case 2:
-        generator = new NumberDecorator(generator);
-        break;
-    case 3:
-        generator = new SpecialDecorator(generator);
-        break;
-    default:
-        std::cout << "1, 2, 3 을 입력하여 옵션을 선택해야합니다.\n";
-        return 1;
-    }
+	}
+	else if (choice2 == 2) {
+		if (choice3 == 3) { // 2, 3
+			generator = new NumberDecorator(generator);
+			generator = new SpecialDecorator(generator);
+		}
+		else { // 2
+			generator = new NumberDecorator(generator);
+		}
+
+	}
+	else { // 3만 선택됐을 때
+		generator = new SpecialDecorator(generator);
+	}
 
 	for (int i = 0; i < 20; i++) { // 생성된 문자열을 벡터에 넣기
 		std::string temp = generator->getRandomString();
